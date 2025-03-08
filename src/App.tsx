@@ -29,8 +29,8 @@ function App() {
       {/* Main Chat Area */}
       <main className="flex flex-col flex-grow">
         <header className="p-4 border-b border-gray-700">
-          <h1 className="text-8xl text-tangy font-meowscript font-semibold">
-            <>Swami Raaji Thase</>
+          <h1 className="text-8xl justify-self-center text-tangy font-meowscript font-semibold">
+            Swami Raaji T hase
           </h1>
         </header>
 
