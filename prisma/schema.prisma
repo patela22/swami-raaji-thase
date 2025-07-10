@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Embedding {
+  id        String   @id @default(cuid())
+  scripture String
+  page      String
+  content   String
+  embedding Unsupported("vector(1536)")
+  createdAt DateTime @default(now())
+
+  @@map("embeddings")
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  prompt    String
+  answer    String
+  citations Json
+  createdAt DateTime @default(now())
+
+  @@map("logs")
+} 

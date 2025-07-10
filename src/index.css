@@ -1,9 +1,0 @@
-@import url("https://fonts.googleapis.com/css2?family=Meow+Script&display=swap");
-@import "tailwindcss";
-
-@theme {
-  --color-cream: #fffdd0;
-  --color-tangy: #ecc895;
-  --color-bermuda: #78dcca;
-  --font-meowscript: "Meow Script", cursive;
-}

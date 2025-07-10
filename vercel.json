@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "app/api/chat/route.ts": {
+      "runtime": "edge"
+    }
+  },
+  "env": {
+    "OPENAI_API_KEY": "@openai_api_key",
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "SUPABASE_ANON_KEY": "@supabase_anon_key",
+    "DATABASE_URL": "@database_url"
+  }
+}
