@@ -5,6 +5,7 @@ import pdf from "pdf-parse";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { generateEmbeddings } from "../lib/embeddings";
 import { insertEmbeddings } from "../lib/retriever";
+import { supabase } from "../lib/supabase";
 
 interface Chunk {
   scripture: string;
@@ -106,23 +107,81 @@ function isScannedPDF(text: string): boolean {
 
 async function splitTextIntoChunks(
   text: string,
-  chunkSize: number = 500
+  chunkSize: number = 800, // Increased from 500 for better context
+  chunkOverlap: number = 100 // Increased from 50 for better continuity
 ): Promise<string[]> {
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize,
-    chunkOverlap: 50,
-    separators: ["\n\n", "\n", " ", ""],
+    chunkOverlap,
+    separators: [
+      "\n\n", // Paragraph breaks
+      "\n", // Line breaks
+      ". ", // Sentence breaks
+      "? ", // Question marks
+      "! ", // Exclamation marks
+      "; ", // Semicolons
+      ", ", // Commas
+      " ", // Word breaks
+      "", // Character breaks
+    ],
   });
 
   const chunks = await splitter.splitText(text);
 
-  // Filter out empty or very large chunks
-  const filteredChunks = chunks.filter((chunk) => {
-    const trimmed = chunk.trim();
-    return trimmed.length > 10 && trimmed.length < 4000; // Skip empty or oversized chunks
-  });
+  // Enhanced filtering and processing
+  const filteredChunks = chunks
+    .map((chunk) => chunk.trim())
+    .filter((chunk) => {
+      const trimmed = chunk.trim();
+      // More sophisticated filtering
+      return (
+        trimmed.length > 20 && // Minimum meaningful length
+        trimmed.length < 2000 && // Maximum reasonable length
+        !isHeaderOrFooter(trimmed) && // Remove headers/footers
+        !isPageNumber(trimmed) && // Remove page numbers
+        hasMeaningfulContent(trimmed) // Ensure meaningful content
+      );
+    })
+    .map((chunk) => cleanChunk(chunk)); // Clean up the chunk
 
   return filteredChunks;
+}
+
+// Helper functions for better chunk processing
+function isHeaderOrFooter(text: string): boolean {
+  const headerFooterPatterns = [
+    /^page\s+\d+/i,
+    /^\d+\s*$/,
+    /^chapter\s+\d+/i,
+    /^section\s+\d+/i,
+    /^©\s*\d{4}/i,
+    /^all\s+rights\s+reserved/i,
+    /^confidential/i,
+    /^internal\s+use\s+only/i,
+  ];
+
+  return headerFooterPatterns.some((pattern) => pattern.test(text.trim()));
+}
+
+function isPageNumber(text: string): boolean {
+  return /^\s*\d+\s*$/.test(text.trim());
+}
+
+function hasMeaningfulContent(text: string): boolean {
+  // Check if text has meaningful words (not just numbers, symbols, etc.)
+  const words = text.split(/\s+/).filter((word) => word.length > 0);
+  const meaningfulWords = words.filter(
+    (word) => /[a-zA-Z]/.test(word) && word.length > 2
+  );
+
+  return meaningfulWords.length >= 3; // At least 3 meaningful words
+}
+
+function cleanChunk(text: string): string {
+  return text
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .replace(/\n\s*\n/g, "\n") // Remove multiple line breaks
+    .trim();
 }
 
 async function processPDF(filePath: string): Promise<Chunk[]> {
@@ -130,6 +189,24 @@ async function processPDF(filePath: string): Promise<Chunk[]> {
 
   const fileName = path.basename(filePath, ".pdf");
   const scriptureName = getScriptureName(fileName);
+
+  // DELETE existing chunks for this scripture before inserting new ones
+  try {
+    const { error: delError } = await supabase
+      .from("embeddings")
+      .delete()
+      .eq("scripture", scriptureName);
+    if (delError) {
+      console.error(
+        `Error deleting old chunks for ${scriptureName}:`,
+        delError
+      );
+    } else {
+      console.log(`Deleted old chunks for ${scriptureName}`);
+    }
+  } catch (err) {
+    console.error(`Exception deleting old chunks for ${scriptureName}:`, err);
+  }
 
   try {
     const text = await extractTextFromPDF(filePath);

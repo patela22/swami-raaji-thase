@@ -39,7 +39,9 @@ async function checkDatabase() {
       .limit(1000);
 
     if (scriptures) {
-      const uniqueScriptures = [...new Set(scriptures.map((s) => s.scripture))];
+      const uniqueScriptures = Array.from(
+        new Set(scriptures.map((s) => s.scripture))
+      );
       console.log(`📚 Unique scriptures: ${uniqueScriptures.length}`);
       console.log("Scriptures:", uniqueScriptures);
     }

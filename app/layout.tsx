@@ -1,13 +1,19 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import { ThemeProvider } from "./components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "Swami Raaji Thase - BAPS Satsang Chatbot",
+  title: "Swami Raaji Thase - BAPS Satsang AI Assistant",
   description:
-    "AI-powered chatbot for BAPS Satsang questions grounded in scripture",
+    "Ask questions about BAPS Satsang and receive answers grounded in scripture",
+  keywords: ["BAPS", "Satsang", "Spiritual", "AI", "Assistant", "Scripture"],
+  authors: [{ name: "Swami Raaji Thase" }],
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#f1722d",
 };
 
 export default function RootLayout({
@@ -16,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

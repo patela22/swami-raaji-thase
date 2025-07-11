@@ -2,11 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import ChatMessage from "./ChatMessage";
+import ChatInput from "./ChatInput";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  citations?: Array<{ scripture: string; page: string; snippet: string }>;
+  citations?: Array<{
+    scripture: string;
+    page: string;
+    snippet: string;
+    relevance?: number;
+  }>;
 }
 
 interface ChatWindowProps {
@@ -19,12 +26,19 @@ export default function ChatWindow({
   setMessages,
 }: ChatWindowProps) {
   const [messages, setLocalMessages] = useState<Message[]>(initialMessages);
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSources, setShowSources] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [streamingMessage, setStreamingMessage] = useState("");
   const hasFiredInitial = useRef(false);
+  const [allCitations, setAllCitations] = useState<
+    Array<{
+      scripture: string;
+      page: string;
+      snippet: string;
+      relevance?: number;
+    }>
+  >([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,6 +52,24 @@ export default function ChatWindow({
   useEffect(() => {
     setMessages(messages);
   }, [messages, setMessages]);
+
+  // Update citations when messages change
+  useEffect(() => {
+    const citations = messages
+      .filter((msg) => msg.role === "assistant" && msg.citations)
+      .flatMap((msg) => msg.citations || []);
+
+    // Remove duplicates based on scripture + page combination
+    const uniqueCitations = citations.filter(
+      (citation, index, self) =>
+        index ===
+        self.findIndex(
+          (c) => c.scripture === citation.scripture && c.page === citation.page
+        )
+    );
+
+    setAllCitations(uniqueCitations);
+  }, [messages]);
 
   // Fire API call for initial message if present
   useEffect(() => {
@@ -140,30 +172,49 @@ export default function ChatWindow({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const userMessage = input.trim();
-    setInput("");
-    const newMessages = [...messages, { role: "user", content: userMessage }];
+  const handleSendMessage = async (message: string) => {
+    const userMessage = message.trim();
+    const newMessages: Message[] = [
+      ...messages,
+      { role: "user", content: userMessage },
+    ];
     setLocalMessages(newMessages);
     sendToApi(newMessages);
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Main Chat Area - 75% */}
-      <div className="flex flex-col w-3/4">
+    <div className="flex h-screen bg-gradient-to-br from-neutral-900 to-neutral-800">
+      {/* Main Chat Area */}
+      <div className="flex flex-col flex-1">
         {/* Header */}
-        <header className="p-4 border-b border-gray-200 bg-white">
-          <h1 className="text-3xl text-tangy font-meowscript font-semibold">
-            Swami Raaji Thase
-          </h1>
+        <header className="border-b border-neutral-700 bg-surface/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
+                <span className="text-white font-bold text-lg">SR</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-text-primary">
+                  Swami Raaji Thase
+                </h1>
+                <p className="text-sm text-text-secondary">
+                  Spiritual AI Assistant
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowSources(!showSources)}
+                className="px-4 py-2 text-sm bg-surface hover:bg-neutral-700 text-text-secondary hover:text-text-primary rounded-lg border border-neutral-700 transition-all duration-200"
+              >
+                Sources ({allCitations.length})
+              </button>
+            </div>
+          </div>
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {messages.map((message, index) => (
             <ChatMessage
               key={index}
@@ -178,54 +229,79 @@ export default function ChatWindow({
           )}
 
           {isLoading && !streamingMessage && (
-            <div className="text-center text-gray-500">Thinking...</div>
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-2 text-text-secondary">
+                <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Thinking...</span>
+              </div>
+            </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-200 bg-white">
-          <form onSubmit={handleSubmit} className="flex gap-4">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a question about BAPS Satsang..."
-              disabled={isLoading}
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-tangy focus:outline-none disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="px-6 py-3 bg-tangy text-white rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Send
-            </button>
-          </form>
+        <div className="border-t border-neutral-700 bg-surface/80 backdrop-blur-sm p-6">
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            disabled={isLoading}
+            placeholder="Ask a question about BAPS Satsang..."
+          />
         </div>
       </div>
 
-      {/* Sources Panel - 25% */}
-      <div className="w-1/4 border-l border-gray-200 bg-gray-50">
-        <div className="p-4 border-b border-gray-200">
-          <button
-            onClick={() => setShowSources(!showSources)}
-            className="flex items-center justify-between w-full text-left font-semibold text-gray-700"
-          >
-            Sources
-            <span className="text-gray-400">{showSources ? "▼" : "▶"}</span>
-          </button>
-        </div>
+      {/* Sources Panel */}
+      {showSources && (
+        <div className="w-80 border-l border-neutral-700 bg-surface/80 backdrop-blur-sm">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">
+              Sources & Citations
+            </h3>
 
-        {showSources && (
-          <div className="p-4">
-            <div className="text-sm text-gray-600">
-              Recent sources will appear here as you chat...
-            </div>
+            {allCitations.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-700 flex items-center justify-center">
+                  <span className="text-2xl">📚</span>
+                </div>
+                <p className="text-sm text-text-secondary">
+                  Sources will appear here as you chat...
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                {allCitations.map((citation, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-lg bg-neutral-800 border border-neutral-700"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="font-medium text-sm text-text-primary">
+                        {citation.scripture}
+                      </div>
+                      {citation.relevance && (
+                        <div className="text-xs text-text-tertiary">
+                          {Math.round(citation.relevance * 100)}% match
+                        </div>
+                      )}
+                    </div>
+                    {citation.page && (
+                      <div className="text-xs text-text-secondary mb-2">
+                        Page {citation.page}
+                      </div>
+                    )}
+                    <div className="text-xs text-text-secondary leading-relaxed">
+                      "{citation.snippet}"
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Analytics Dashboard */}
+      <AnalyticsDashboard />
     </div>
   );
 }

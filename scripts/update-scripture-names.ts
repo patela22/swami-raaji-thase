@@ -97,7 +97,9 @@ async function updateScriptureNames() {
     }
 
     // Get unique scripture names
-    const uniqueScriptures = [...new Set(scriptures.map((s) => s.scripture))];
+    const uniqueScriptures = Array.from(
+      new Set(scriptures.map((s) => s.scripture))
+    );
     console.log(
       `📚 Found ${uniqueScriptures.length} unique scriptures in database`
     );

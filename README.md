@@ -1,311 +1,192 @@
-# Swami Raaji Thase - BAPS Satsang Chatbot
+# Swami Raaji Thase - BAPS Satsang AI Assistant
 
-A Next.js RAG (Retrieval-Augmented Generation) chatbot that answers BAPS Satsang questions by grounding GPT-4o on scripture PDFs. The chatbot provides professional, respectful responses based on BAPS teachings and spiritual practices.
+A beautiful, modern AI assistant specifically designed for BAPS Satsang questions, built with Next.js, Supabase, and OpenAI.
 
-## Features
+## 🚀 Features
 
-- **RAG-powered responses**: Grounded in scripture PDFs using vector embeddings
-- **Multilingual support**: Responds in English or Gujarati based on user input
-- **Real-time streaming**: Live token streaming for responsive chat experience
-- **Citation tracking**: Provides source references for all responses
-- **Professional tone**: Maintains appropriate spiritual discourse
-- **Content filtering**: Rejects non-satsang related questions
-- **Exchange logging**: Logs all conversations for analysis
+- **BAPS-Specific Knowledge**: Deep understanding of BAPS (Bochasanwasi Akshar Purushottam Swaminarayan Sanstha) teachings
+- **Sect Differentiation**: Clear explanations of BAPS vs other Swaminarayan sects
+- **Scripture-Based Answers**: Grounded in authentic BAPS scriptures (Vachanamrut, Shikshapatri, etc.)
+- **AI-Powered**: Advanced AI technology for comprehensive spiritual guidance
+- **Instant Answers**: Get immediate responses to your spiritual questions
+- **Beautiful Design**: Modern, accessible UI with dark/light theme support
+- **Advanced RAG**: Hybrid retrieval with semantic and keyword search
+- **Analytics Dashboard**: Track performance and usage metrics
 
-## Tech Stack
+## 🎯 BAPS-Specific Capabilities
 
-- **Frontend**: Next.js 14 (App Router), React 18, Tailwind CSS
-- **Backend**: Next.js API Routes (Edge Runtime)
-- **AI**: OpenAI GPT-4o, text-embedding-3-large
-- **Database**: Supabase with pgvector for vector similarity search
-- **PDF Processing**: LangChain text splitters, pdf-parse
-- **Deployment**: Vercel
+### **Core Knowledge Areas**
 
-## Project Structure
+- **BAPS History**: Founded by Shastriji Maharaj, current guru Mahant Swami Maharaj
+- **Akshar-Purushottam Philosophy**: Central tenet distinguishing BAPS from other sects
+- **Spiritual Practices**: Daily puja, scripture study, community service
+- **Organizational Structure**: Systematic approach to spiritual development
+- **Family Values**: Ghar Sabha (home assemblies) and family programs
+- **Humanitarian Work**: Global community service and educational programs
+
+### **Key Distinctions**
+
+- **BAPS vs Other Sects**: Clear explanations of philosophical and organizational differences
+- **Guru Lineage**: Shastriji Maharaj → Pramukh Swami Maharaj → Mahant Swami Maharaj
+- **Scripture Focus**: Vachanamrut and Shikshapatri as primary texts
+- **Community Programs**: Bal/Kishore/Yuvak/Mahila/Senani Sabhas
+
+## 🛠️ Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account (optional - app works with mock data)
+- OpenAI API key (optional - app works with mock data)
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd swami-raaji-thase
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup** (Optional)
+
+   Create a `.env.local` file in the root directory:
+
+   ```env
+   # Supabase Configuration (Optional)
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+   # OpenAI Configuration (Optional)
+   OPENAI_API_KEY=your_openai_api_key_here
+
+   # App Configuration
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+   **Note**: The app works perfectly without these environment variables - it will use BAPS-specific mock data for demonstration purposes.
+
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🎨 Design System
+
+The application uses a comprehensive design system with:
+
+- **Token-based CSS variables** for consistent theming
+- **WCAG 4.5:1 contrast ratios** for accessibility
+- **Fluid typography** using `clamp()` functions
+- **Dark/light theme support** with smooth transitions
+- **Responsive design** that works on all devices
+
+## 🤖 AI Features
+
+### Advanced RAG System
+
+- **Hybrid Search**: Combines semantic and keyword retrieval
+- **Cross-Encoder Reranking**: Improved relevance scoring
+- **Sentence-Level Distillation**: Extracts most relevant content
+- **Caching**: In-memory cache for performance
+- **Query Guardrails**: Safety filters and length limits
+
+### BAPS-Specific Enhancements
+
+- **Enhanced Query Expansion**: BAPS-specific terms and synonyms
+- **Sect Differentiation**: Clear explanations of BAPS vs other organizations
+- **Guru Lineage Knowledge**: Accurate information about spiritual succession
+- **Scripture Citations**: References to Vachanamrut, Shikshapatri, and other BAPS texts
+
+### Robust Citation System
+
+- **"Cite or Say I Don't Know"**: Strict citation requirements
+- **Relevance Scoring**: Shows match percentages
+- **Collapsible Citations**: Clean UI for source management
+
+## 📊 Analytics
+
+The app includes a comprehensive analytics dashboard showing:
+
+- Total queries and success rates
+- Average response times
+- Top queries and recent activity
+- Performance metrics
+
+## 🔧 Development
+
+### Project Structure
 
 ```
 ├── app/
-│   ├── components/
-│   │   ├── ChatInput.tsx      # Landing page input
-│   │   ├── ChatMessage.tsx    # Individual message display
-│   │   └── ChatWindow.tsx     # Main chat interface
-│   ├── api/
-│   │   └── chat/
-│   │       └── route.ts       # Edge runtime chat API
-│   ├── globals.css            # Tailwind styles
-│   ├── layout.tsx             # Root layout
-│   └── page.tsx               # Main page
-├── lib/
-│   ├── supabase.ts            # Database client
-│   ├── embeddings.ts          # OpenAI embeddings
-│   ├── retriever.ts           # Vector DB queries
-│   └── logger.ts              # Exchange logging
-├── scripts/
-│   └── ingest.ts              # PDF ingestion CLI
-├── prisma/
-│   └── schema.prisma          # Database schema
-├── data/                      # PDF files directory
-└── .env.local                 # Environment variables
+│   ├── components/     # React components
+│   ├── api/           # API routes
+│   ├── globals.css    # Global styles
+│   └── layout.tsx     # Root layout
+├── lib/               # Utility functions
+├── scripts/           # Build and deployment scripts
+└── data/              # Static data files
 ```
 
-## Setup
+### Key Technologies
 
-### 1. Install Dependencies
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **Supabase**: Database and vector storage
+- **OpenAI**: AI model integration
+
+## 🧪 Testing
+
+Test BAPS-specific responses:
 
 ```bash
-npm install
-# or
-pnpm install
+node scripts/test-baps-responses.js
 ```
 
-### 2. Environment Variables
+This will test key BAPS questions:
 
-Create `.env.local` with the following variables:
+- "What is BAPS Satsang?"
+- "What is the difference between BAPS and other Swaminarayan sects?"
+- "Who is the current guru of BAPS?"
+- "What are the core principles of BAPS?"
+- "What is Akshar Purushottam philosophy?"
 
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
-DATABASE_URL=your_supabase_database_url_here
-```
+## 🚀 Deployment
 
-### 3. Database Setup
+The app is configured for deployment on Vercel:
 
-#### Option A: Using Supabase Dashboard
+1. **Connect your repository** to Vercel
+2. **Add environment variables** in the Vercel dashboard
+3. **Deploy automatically** on every push to main
 
-1. Create a new Supabase project
-2. Enable the `pgvector` extension in the SQL editor:
+## 📝 License
 
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS vector;
-   ```
+This project is licensed under the MIT License.
 
-3. Create the embeddings table:
-
-   ```sql
-   CREATE TABLE embeddings (
-     id TEXT PRIMARY KEY,
-     scripture TEXT NOT NULL,
-     page TEXT NOT NULL,
-     content TEXT NOT NULL,
-     embedding vector(1536),
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
-   ```
-
-4. Create the logs table:
-
-   ```sql
-   CREATE TABLE logs (
-     id TEXT PRIMARY KEY,
-     prompt TEXT NOT NULL,
-     answer TEXT NOT NULL,
-     citations JSONB NOT NULL,
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
-   ```
-
-5. Create the vector similarity function:
-   ```sql
-   CREATE OR REPLACE FUNCTION match_documents(
-     query_embedding vector(1536),
-     match_threshold float,
-     match_count int
-   )
-   RETURNS TABLE(
-     id text,
-     scripture text,
-     page text,
-     content text,
-     similarity float
-   )
-   LANGUAGE plpgsql
-   AS $$
-   BEGIN
-     RETURN QUERY
-     SELECT
-       embeddings.id,
-       embeddings.scripture,
-       embeddings.page,
-       embeddings.content,
-       1 - (embeddings.embedding <=> query_embedding) AS similarity
-     FROM embeddings
-     WHERE 1 - (embeddings.embedding <=> query_embedding) > match_threshold
-     ORDER BY embeddings.embedding <=> query_embedding
-     LIMIT match_count;
-   END;
-   $$;
-   ```
-
-#### Option B: Using Prisma
-
-1. Install Prisma CLI:
-
-   ```bash
-   npm install -g prisma
-   ```
-
-2. Generate Prisma client:
-
-   ```bash
-   npx prisma generate
-   ```
-
-3. Push schema to database:
-   ```bash
-   npx prisma db push
-   ```
-
-### 4. Add PDF Files
-
-Place your BAPS Satsang PDF files in the `data/` directory:
-
-```bash
-mkdir data
-# Copy your PDF files to data/
-```
-
-### 5. Ingest PDFs
-
-Run the ingestion script to process PDFs and generate embeddings:
-
-```bash
-pnpm ingest
-```
-
-### 6. Start Development Server
-
-```bash
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the application.
-
-## Usage
-
-### Development
-
-```bash
-# Start development server
-pnpm dev
-
-# Run ingestion script
-pnpm ingest
-
-# Build for production
-pnpm build
-
-# Start production server
-pnpm start
-```
-
-### Deployment
-
-1. **Vercel Deployment**:
-
-   ```bash
-   # Install Vercel CLI
-   npm i -g vercel
-
-   # Deploy to production
-   vercel --prod
-   ```
-
-2. **Environment Variables**: Set all required environment variables in your Vercel project settings.
-
-3. **Database**: Ensure your Supabase database is properly configured with the required tables and functions.
-
-## API Endpoints
-
-### POST /api/chat
-
-Handles chat requests with streaming responses.
-
-**Request Body**:
-
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": "What is the importance of daily prayer in BAPS?"
-    }
-  ]
-}
-```
-
-**Response**: Server-Sent Events stream with:
-
-- `content`: Streaming response tokens
-- `citations`: Source references
-- `[DONE]`: End of stream
-
-## Features in Detail
-
-### Content Filtering
-
-The chatbot automatically filters questions to ensure they're related to BAPS Satsang topics. Keywords include:
-
-- BAPS, Satsang, Swaminarayan
-- Spiritual practices, devotion, bhakti
-- Scriptures, Gita, Vedas, Upanishads
-- Temple, worship, meditation, prayer
-
-### Multilingual Support
-
-The chatbot responds in the same language as the user's question (English or Gujarati).
-
-### Citation System
-
-All responses include citations from the source scriptures with:
-
-- Scripture name
-- Page number
-- Relevant text snippet
-
-### Professional Tone
-
-The AI maintains a respectful, professional tone appropriate for spiritual discourse, focusing on:
-
-- Practical spiritual guidance
-- Scriptural wisdom
-- Respectful discourse
-- Acknowledging limitations when uncertain
-
-## Troubleshooting
-
-### Common Issues
-
-1. **PDF Processing Errors**: Ensure PDFs are text-based, not scanned images
-2. **Embedding Generation**: Check OpenAI API key and rate limits
-3. **Database Connection**: Verify Supabase credentials and network access
-4. **Vector Search**: Ensure pgvector extension is enabled in Supabase
-
-### Debug Mode
-
-Enable debug logging by setting:
-
-```env
-DEBUG=true
-```
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Submit a pull request
 
-## License
+## 📞 Support
 
-This project is for educational and spiritual purposes. Please respect the sacred nature of BAPS teachings and use responsibly.
+For questions or support, please open an issue on GitHub.
 
-## Support
+---
 
-For issues related to:
-
-- **Technical problems**: Check the troubleshooting section
-- **BAPS content**: Consult with BAPS spiritual leaders
-- **Deployment**: Refer to Vercel and Supabase documentation
+**Note**: This application is designed for spiritual guidance and education. Always consult with qualified spiritual teachers for personal spiritual matters.

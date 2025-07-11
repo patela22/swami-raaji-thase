@@ -7,18 +7,18 @@ async function testVectorSearch() {
     "What is BAPS Satsang?",
     "Who is Swaminarayan?",
     "What are the teachings of BAPS?",
-    "Tell me about Vachanamrut",
+    "Tell me about the Vachanamrut",
   ];
 
   for (const query of testQueries) {
     console.log(`🔍 Testing query: "${query}"`);
 
     try {
-      const results = await queryVectorDB(query, 3);
+      const results = await queryVectorDB(query, { topK: 3 });
       console.log(`   Found ${results.length} results`);
 
       if (results.length > 0) {
-        results.forEach((result, index) => {
+        results.forEach((result: any, index: number) => {
           console.log(
             `   ${index + 1}. ${result.scripture} (Page ${
               result.page

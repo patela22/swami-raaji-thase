@@ -34,7 +34,7 @@ async function debugVectorSearch() {
 
     if (data && data.length > 0) {
       console.log("   Sample results:");
-      data.slice(0, 3).forEach((result, index) => {
+      data.slice(0, 3).forEach((result: any, index: number) => {
         console.log(
           `   ${index + 1}. ${result.scripture} (Page ${
             result.page
@@ -65,7 +65,7 @@ async function debugVectorSearch() {
       );
       if (data2 && data2.length > 0) {
         console.log("   Sample results:");
-        data2.slice(0, 3).forEach((result, index) => {
+        data2.slice(0, 3).forEach((result: any, index: number) => {
           console.log(
             `   ${index + 1}. ${result.scripture} (Page ${
               result.page
