@@ -9,7 +9,7 @@ A beautiful, modern AI assistant specifically designed for BAPS Satsang question
 - **Scripture-Based Answers**: Grounded in authentic BAPS scriptures (Vachanamrut, Shikshapatri, etc.)
 - **AI-Powered**: Advanced AI technology for comprehensive spiritual guidance
 - **Instant Answers**: Get immediate responses to your spiritual questions
-- **Beautiful Design**: Modern, accessible UI with dark/light theme support
+- **Beautiful Design**: Modern, accessible UI with dark mode
 - **Advanced RAG**: Hybrid retrieval with semantic and keyword search
 - **Analytics Dashboard**: Track performance and usage metrics
 
@@ -83,6 +83,45 @@ A beautiful, modern AI assistant specifically designed for BAPS Satsang question
 
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+## 🌐 Deployment
+
+### **Recommended: Vercel (Easiest)**
+
+1. **Push to GitHub**:
+
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push origin main
+   ```
+
+2. **Deploy to Vercel**:
+
+   - Go to [vercel.com](https://vercel.com)
+   - Sign up/Login with GitHub
+   - Click "New Project"
+   - Import your repository
+   - Add environment variables (optional)
+   - Deploy!
+
+3. **Get your URL**: You'll receive a URL like `https://your-app.vercel.app`
+
+### **Alternative Platforms**
+
+- **Netlify**: Similar to Vercel, great for static sites
+- **Railway**: Good for full-stack apps with database
+- **Render**: Simple deployment for Node.js apps
+
+### **Environment Variables for Production**
+
+If you want to use real data instead of mock data, add these to your deployment platform:
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+```
+
 ## 🎨 Design System
 
 The application uses a comprehensive design system with:
@@ -90,7 +129,7 @@ The application uses a comprehensive design system with:
 - **Token-based CSS variables** for consistent theming
 - **WCAG 4.5:1 contrast ratios** for accessibility
 - **Fluid typography** using `clamp()` functions
-- **Dark/light theme support** with smooth transitions
+- **Dark mode** with smooth transitions
 - **Responsive design** that works on all devices
 
 ## 🤖 AI Features
@@ -163,14 +202,6 @@ This will test key BAPS questions:
 - "Who is the current guru of BAPS?"
 - "What are the core principles of BAPS?"
 - "What is Akshar Purushottam philosophy?"
-
-## 🚀 Deployment
-
-The app is configured for deployment on Vercel:
-
-1. **Connect your repository** to Vercel
-2. **Add environment variables** in the Vercel dashboard
-3. **Deploy automatically** on every push to main
 
 ## 📝 License
 

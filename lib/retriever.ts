@@ -384,7 +384,42 @@ async function generateEmbedding(text: string): Promise<number[]> {
   }
 }
 
-// Guardrails for query safety
+// Add this function before the existing exports
+export async function insertEmbeddings(
+  chunks: Array<{
+    scripture: string;
+    page: string;
+    content: string;
+    embedding: number[];
+  }>
+): Promise<void> {
+  if (!supabase) {
+    console.warn("Supabase not configured - skipping embedding insertion");
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from("documents").insert(
+      chunks.map((chunk) => ({
+        content: chunk.content,
+        scripture: chunk.scripture,
+        page: chunk.page,
+        embedding: chunk.embedding,
+      }))
+    );
+
+    if (error) {
+      console.error("Error inserting embeddings:", error);
+      throw error;
+    }
+
+    console.log(`Successfully inserted ${chunks.length} embeddings`);
+  } catch (error) {
+    console.error("Failed to insert embeddings:", error);
+    throw error;
+  }
+}
+
 export function applyQueryGuardrails(query: string): string {
   // Remove potentially harmful content
   const sanitized = query
