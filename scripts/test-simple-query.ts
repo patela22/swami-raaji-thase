@@ -1,3 +1,8 @@
+import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: ".env.local" });
+
 import { queryVectorDB } from "../lib/retriever";
 import {
   processQueryForRetrieval,

@@ -1,27 +1,16 @@
-# Swami Raaji Thase - BAPS Satsang AI Assistant
+# Swami Raaji Thase - BAPS AI Assistant
 
-A beautiful, modern AI assistant specifically designed for BAPS Satsang questions, built with Next.js, Supabase, and OpenAI.
+A beautiful, modern AI assistant specifically designed for BAPS Satsang questions, built with Next.js, Pinecone, and OpenAI.
 
-## 🚀 Features
+## 🎯 Purpose
 
-- **BAPS-Specific Knowledge**: Deep understanding of BAPS (Bochasanwasi Akshar Purushottam Swaminarayan Sanstha) teachings
-- **Sect Differentiation**: Clear explanations of BAPS vs other Swaminarayan sects
-- **Scripture-Based Answers**: Grounded in authentic BAPS scriptures (Vachanamrut, Shikshapatri, etc.)
-- **AI-Powered**: Advanced AI technology for comprehensive spiritual guidance
-- **Instant Answers**: Get immediate responses to your spiritual questions
-- **Beautiful Design**: Modern, accessible UI with dark mode
-- **Advanced RAG**: Hybrid retrieval with semantic and keyword search
-- **Analytics Dashboard**: Track performance and usage metrics
+This AI assistant provides accurate, well-cited answers about BAPS (Bochasanwasi Akshar Purushottam Swaminarayan Sanstha) Satsang, including:
 
-## 🎯 BAPS-Specific Capabilities
-
-### **Core Knowledge Areas**
-
-- **BAPS History**: Founded by Shastriji Maharaj, current guru Mahant Swami Maharaj
-- **Akshar-Purushottam Philosophy**: Central tenet distinguishing BAPS from other sects
-- **Spiritual Practices**: Daily puja, scripture study, community service
-- **Organizational Structure**: Systematic approach to spiritual development
-- **Family Values**: Ghar Sabha (home assemblies) and family programs
+- **Core Philosophy**: Akshar-Purushottam philosophy and spiritual principles
+- **Scripture Knowledge**: Vachanamrut, Shikshapatri, and other BAPS texts
+- **Guru Lineage**: Shastriji Maharaj → Pramukh Swami Maharaj → Mahant Swami Maharaj
+- **Satsang Practices**: Daily worship, scripture study, and community service
+- **Temple Activities**: Youth programs, educational initiatives, and cultural preservation
 - **Humanitarian Work**: Global community service and educational programs
 
 ### **Key Distinctions**
@@ -37,7 +26,7 @@ A beautiful, modern AI assistant specifically designed for BAPS Satsang question
 
 - Node.js 18+
 - npm or yarn
-- Supabase account (optional - app works with mock data)
+- Pinecone account (optional - app works with mock data)
 - OpenAI API key (optional - app works with mock data)
 
 ### Installation
@@ -60,9 +49,10 @@ A beautiful, modern AI assistant specifically designed for BAPS Satsang question
    Create a `.env.local` file in the root directory:
 
    ```env
-   # Supabase Configuration (Optional)
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+   # Pinecone Configuration (Optional)
+   PINECONE_API_KEY=your_pinecone_api_key_here
+   PINECONE_ENVIRONMENT=your_pinecone_environment_here
+   PINECONE_INDEX=your_pinecone_index_name_here
 
    # OpenAI Configuration (Optional)
    OPENAI_API_KEY=your_openai_api_key_here
@@ -73,13 +63,21 @@ A beautiful, modern AI assistant specifically designed for BAPS Satsang question
 
    **Note**: The app works perfectly without these environment variables - it will use BAPS-specific mock data for demonstration purposes.
 
-4. **Run the development server**
+4. **Pinecone Index Setup**
+
+   Create a Pinecone index with these settings:
+
+   - **Dimensions**: `1536` (for text-embedding-3-small model)
+   - **Metric**: `cosine`
+   - **Pod Type**: `p1.x1` (free tier)
+
+5. **Run the development server**
 
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
+6. **Open your browser**
 
    Navigate to [http://localhost:3000](http://localhost:3000)
 
@@ -118,8 +116,9 @@ If you want to use real data instead of mock data, add these to your deployment 
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_ENVIRONMENT=your_pinecone_environment
+PINECONE_INDEX=your_pinecone_index_name
 ```
 
 ## 🎨 Design System
@@ -184,7 +183,7 @@ The app includes a comprehensive analytics dashboard showing:
 - **Next.js 14**: React framework with App Router
 - **TypeScript**: Type-safe development
 - **Tailwind CSS**: Utility-first CSS framework
-- **Supabase**: Database and vector storage
+- **Pinecone**: Vector database for semantic search
 - **OpenAI**: AI model integration
 
 ## 🧪 Testing

@@ -5,7 +5,14 @@ import pdf from "pdf-parse";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { generateEmbeddings } from "../lib/embeddings";
 import { insertEmbeddings } from "../lib/retriever";
-import { supabase } from "../lib/supabase";
+import { Pinecone } from "@pinecone-database/pinecone";
+
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
+const pineconeIndex = pinecone.Index(
+  process.env.PINECONE_INDEX! || "baps-embeddings"
+);
 
 interface Chunk {
   scripture: string;
@@ -101,14 +108,13 @@ function isScannedPDF(text: string): boolean {
   const nonWhitespaceChars = trimmedText.replace(/\s/g, "").length;
   const whitespaceRatio = (text.length - nonWhitespaceChars) / text.length;
 
-  // If more than 90% is whitespace or less than 100 chars of actual text
   return whitespaceRatio > 0.9 || nonWhitespaceChars < 100;
 }
 
 async function splitTextIntoChunks(
   text: string,
-  chunkSize: number = 800, // Increased from 500 for better context
-  chunkOverlap: number = 100 // Increased from 50 for better continuity
+  chunkSize: number = 1500,
+  chunkOverlap: number = 300
 ): Promise<string[]> {
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize,
@@ -184,6 +190,12 @@ function cleanChunk(text: string): string {
     .trim();
 }
 
+// List of scripture names that need reversal
+const REVERSED_SCRIPTURES = [
+  "Satsangi Jivan",
+  // Add more names here if needed
+];
+
 async function processPDF(filePath: string): Promise<Chunk[]> {
   console.log(`Processing: ${filePath}`);
 
@@ -192,20 +204,14 @@ async function processPDF(filePath: string): Promise<Chunk[]> {
 
   // DELETE existing chunks for this scripture before inserting new ones
   try {
-    const { error: delError } = await supabase
-      .from("embeddings")
-      .delete()
-      .eq("scripture", scriptureName);
-    if (delError) {
-      console.error(
-        `Error deleting old chunks for ${scriptureName}:`,
-        delError
-      );
-    } else {
-      console.log(`Deleted old chunks for ${scriptureName}`);
-    }
+    // For Pinecone, we need to delete by metadata filter
+    // Note: Pinecone doesn't support direct deletion by metadata filter in the free tier
+    // We'll skip deletion for now and rely on upsert to overwrite
+    console.log(
+      `Preparing to upsert chunks for ${scriptureName} (existing chunks will be overwritten)`
+    );
   } catch (err) {
-    console.error(`Exception deleting old chunks for ${scriptureName}:`, err);
+    console.error(`Exception preparing chunks for ${scriptureName}:`, err);
   }
 
   try {
@@ -247,17 +253,17 @@ async function processPDF(filePath: string): Promise<Chunk[]> {
           const embedding = embeddings[j];
           if (embedding.length !== 1536) {
             console.error(
-              `Invalid embedding dimension for chunk ${i + j}: ${
-                embedding.length
-              }`
+              `❌ Invalid embedding dimension: ${embedding.length} (expected 1536)`
             );
-            continue; // Skip this chunk
+            continue;
           }
 
           chunkObjects.push({
             scripture: scriptureName,
             page: Math.floor((i + j) / 3).toString(), // Approximate page numbers
-            content: batch[j],
+            content: REVERSED_SCRIPTURES.includes(scriptureName)
+              ? batch[j].split("").reverse().join("")
+              : batch[j],
             embedding: embedding,
           });
         }

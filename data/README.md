@@ -24,7 +24,7 @@ The ingest script will:
 
 1. Extract text from each PDF
 2. Split text into ~500-token chunks
-3. Generate embeddings using OpenAI's text-embedding-3-large
+3. Generate embeddings using OpenAI's text-embedding-3-small
 4. Store embeddings in the Supabase database
 
 Run `pnpm ingest` to process all PDF files in this directory.

@@ -1,12 +1,22 @@
-import { createClient } from "@supabase/supabase-js";
+import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: ".env.local" });
+
+import { Pinecone } from "@pinecone-database/pinecone";
 import { trackQueryPerformance } from "./analytics";
 
-// Initialize Supabase client with fallback for missing env vars
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Initialize Pinecone client
+function getPineconeClient() {
+  return new Pinecone({
+    apiKey: process.env.PINECONE_API_KEY!,
+  });
+}
 
-const supabase =
-  supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+function getPineconeIndex() {
+  const pinecone = getPineconeClient();
+  return pinecone.Index(process.env.PINECONE_INDEX! || "baps-embeddings");
+}
 
 interface RetrievalOptions {
   topK?: number;
@@ -25,8 +35,8 @@ interface RetrievalResult {
   relevance_score?: number;
 }
 
-// Simple in-memory cache for demonstration
-const cache = new Map<string, RetrievalResult[]>();
+// Simple in-memory cache
+const cache = new Map<string, any>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export async function queryVectorDB(
@@ -41,9 +51,9 @@ export async function queryVectorDB(
     useCache = true,
   } = options;
 
-  // Check if Supabase is configured
-  if (!supabase) {
-    console.warn("Supabase not configured - returning mock data");
+  // Check if Pinecone is configured
+  if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+    console.warn("Pinecone not configured - returning mock data");
     return getMockResults(query, topK);
   }
 
@@ -101,7 +111,7 @@ export async function queryVectorDB(
   }
 }
 
-// Mock data for when Supabase is not configured
+// Mock data for when Pinecone is not configured
 function getMockResults(query: string, topK: number): RetrievalResult[] {
   const bapsScriptures = [
     "Vachanamrut",
@@ -164,60 +174,75 @@ async function performSemanticSearch(
   topK: number,
   threshold: number
 ): Promise<RetrievalResult[]> {
-  if (!supabase) return [];
+  try {
+    // Generate embedding for the query
+    const queryEmbedding = await generateEmbedding(query);
 
-  const { data, error } = await supabase.rpc("match_documents", {
-    query_embedding: await generateEmbedding(query),
-    match_threshold: threshold,
-    match_count: topK,
-  });
+    // Query Pinecone
+    const queryResponse = await getPineconeIndex().query({
+      vector: queryEmbedding,
+      topK: topK,
+      includeMetadata: true,
+      includeValues: false,
+    });
 
-  if (error) {
-    console.error("Semantic search error:", error);
+    return (
+      queryResponse.matches
+        ?.filter((match) => match.score && match.score >= threshold)
+        .map((match) => ({
+          id: match.id,
+          content: String(match.metadata?.content || ""),
+          scripture: String(match.metadata?.scripture || ""),
+          page: String(match.metadata?.page || ""),
+          similarity: match.score || 0,
+        })) || []
+    );
+  } catch (error) {
+    console.error("Pinecone semantic search error:", error);
     return [];
   }
-
-  return data.map((item: any) => ({
-    id: item.id,
-    content: item.content,
-    scripture: item.scripture,
-    page: item.page,
-    similarity: item.similarity,
-  }));
 }
 
 async function performKeywordSearch(
   query: string,
   topK: number
 ): Promise<RetrievalResult[]> {
-  if (!supabase) return [];
+  try {
+    // Extract keywords from query
+    const keywords = extractKeywords(query);
 
-  // Extract keywords from query
-  const keywords = extractKeywords(query);
+    if (keywords.length === 0) return [];
 
-  if (keywords.length === 0) return [];
+    // Generate embedding for the query
+    const queryEmbedding = await generateEmbedding(query);
 
-  // Build keyword search query
-  const keywordQuery = keywords.map((k) => `"${k}"`).join(" OR ");
+    // Query Pinecone with metadata filtering
+    const queryResponse = await getPineconeIndex().query({
+      vector: queryEmbedding,
+      topK: topK * 2, // Get more results to filter
+      includeMetadata: true,
+      includeValues: false,
+      filter: {
+        // Filter by keywords in content (simplified approach)
+        content: { $in: keywords },
+      },
+    });
 
-  const { data, error } = await supabase
-    .from("documents")
-    .select("id, content, scripture, page")
-    .textSearch("content", keywordQuery)
-    .limit(topK);
-
-  if (error) {
-    console.error("Keyword search error:", error);
+    return (
+      queryResponse.matches
+        ?.map((match) => ({
+          id: match.id,
+          content: String(match.metadata?.content || ""),
+          scripture: String(match.metadata?.scripture || ""),
+          page: String(match.metadata?.page || ""),
+          similarity: match.score || 0.5, // Default similarity for keyword matches
+        }))
+        .slice(0, topK) || []
+    );
+  } catch (error) {
+    console.error("Pinecone keyword search error:", error);
     return [];
   }
-
-  return data.map((item: any) => ({
-    id: item.id,
-    content: item.content,
-    scripture: item.scripture,
-    page: item.page,
-    similarity: 0.5, // Default similarity for keyword matches
-  }));
 }
 
 function extractKeywords(query: string): string[] {
@@ -384,7 +409,6 @@ async function generateEmbedding(text: string): Promise<number[]> {
   }
 }
 
-// Add this function before the existing exports
 export async function insertEmbeddings(
   chunks: Array<{
     scripture: string;
@@ -393,29 +417,31 @@ export async function insertEmbeddings(
     embedding: number[];
   }>
 ): Promise<void> {
-  if (!supabase) {
-    console.warn("Supabase not configured - skipping embedding insertion");
+  if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+    console.warn("Pinecone not configured - skipping embedding insertion");
     return;
   }
 
   try {
-    const { error } = await supabase.from("documents").insert(
-      chunks.map((chunk) => ({
+    // Prepare vectors for Pinecone
+    const vectors = chunks.map((chunk, index) => ({
+      id: `${chunk.scripture}-${chunk.page}-${index}`,
+      values: chunk.embedding,
+      metadata: {
         content: chunk.content,
         scripture: chunk.scripture,
         page: chunk.page,
-        embedding: chunk.embedding,
-      }))
+      },
+    }));
+
+    // Upsert vectors to Pinecone
+    await getPineconeIndex().upsert(vectors);
+
+    console.log(
+      `Successfully inserted ${chunks.length} embeddings to Pinecone`
     );
-
-    if (error) {
-      console.error("Error inserting embeddings:", error);
-      throw error;
-    }
-
-    console.log(`Successfully inserted ${chunks.length} embeddings`);
   } catch (error) {
-    console.error("Failed to insert embeddings:", error);
+    console.error("Failed to insert embeddings to Pinecone:", error);
     throw error;
   }
 }

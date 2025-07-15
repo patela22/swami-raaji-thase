@@ -17,7 +17,15 @@ export default function Home() {
 
   if (!isChatStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-800">
+      <div className="relative flex flex-col min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-800 justify-between overflow-visible">
+        {/* Background Decoration - now covers the whole page */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute -top-32 -right-32 w-[28rem] h-[28rem] bg-primary-800 rounded-full mix-blend-screen filter blur-2xl opacity-70 animate-pulse"></div>
+          <div
+            className="absolute -bottom-32 -left-32 w-[28rem] h-[28rem] bg-primary-700 rounded-full mix-blend-screen filter blur-2xl opacity-70 animate-pulse"
+            style={{ animationDelay: "2s" }}
+          ></div>
+        </div>
         {/* Header */}
         <header className="relative z-10 border-b border-neutral-700 bg-surface/80 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,17 +43,8 @@ export default function Home() {
         </header>
 
         {/* Hero Section */}
-        <main className="relative flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <main className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Background Decoration */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-800 rounded-full mix-blend-screen filter blur-xl opacity-70 animate-pulse"></div>
-              <div
-                className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-700 rounded-full mix-blend-screen filter blur-xl opacity-70 animate-pulse"
-                style={{ animationDelay: "2s" }}
-              ></div>
-            </div>
-
             {/* Content */}
             <div className="relative z-10">
               <div className="mb-8">
@@ -103,17 +102,16 @@ export default function Home() {
               <div className="max-w-2xl mx-auto">
                 <ChatInput onSendMessage={handleFirstMessage} />
               </div>
-
-              {/* Footer */}
-              <div className="mt-16 text-center">
-                <p className="text-sm text-text-tertiary">
-                  Powered by advanced AI technology • Grounded in spiritual
-                  wisdom
-                </p>
-              </div>
             </div>
           </div>
         </main>
+
+        {/* Footer */}
+        <footer className="text-center py-2">
+          <p className="text-xs text-text-tertiary">
+            Powered by advanced AI technology • Grounded in spiritual wisdom
+          </p>
+        </footer>
       </div>
     );
   }

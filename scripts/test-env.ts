@@ -7,10 +7,9 @@ console.log("🔍 Testing Environment Variables...\n");
 
 const requiredVars = [
   "OPENAI_API_KEY",
-  "SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "SUPABASE_ANON_KEY",
-  "DATABASE_URL",
+  "PINECONE_API_KEY",
+  "PINECONE_ENVIRONMENT",
+  "PINECONE_INDEX",
 ];
 
 let allGood = true;
@@ -33,4 +32,7 @@ console.log(
     (allGood
       ? "🎉 All environment variables are properly configured!"
       : "⚠️  Please fix the missing/placeholder values above.")
+);
+console.log(
+  "\nNote: The app works with mock data if Pinecone is not configured."
 );

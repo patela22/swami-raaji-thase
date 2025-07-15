@@ -33,8 +33,9 @@
 6. **Add Environment Variables** (optional):
    ```
    OPENAI_API_KEY=your_openai_api_key
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   PINECONE_API_KEY=your_pinecone_api_key
+   PINECONE_ENVIRONMENT=your_pinecone_environment
+   PINECONE_INDEX=your_pinecone_index_name
    ```
 7. **Click "Deploy"**
 
@@ -70,13 +71,18 @@
 
 ## Environment Variables
 
-### Required for Full Functionality
+### **Environment Variables for Production**
+
+If you want to use real data instead of mock data, add these to your deployment platform:
 
 ```env
-OPENAI_API_KEY=sk-...
-NEXT_PUBLIC_SUPABASE_URL=https://...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+OPENAI_API_KEY=your_openai_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_ENVIRONMENT=your_pinecone_environment
+PINECONE_INDEX=your_pinecone_index_name
 ```
+
+**Note**: Make sure your Pinecone index is configured with 1536 dimensions for the text-embedding-3-small model.
 
 ### Optional (App works with mock data without these)
 
@@ -96,7 +102,7 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 - Check environment variables are set correctly
 - Ensure API keys are valid
-- Verify Supabase connection (if using)
+- Verify Pinecone connection (if using)
 
 ### Performance Issues
 

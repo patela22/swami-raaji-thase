@@ -1,3 +1,8 @@
+import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: ".env.local" });
+
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -7,11 +12,7 @@ const openai = new OpenAI({
 async function testEmbeddingModels() {
   console.log("🧪 Testing different embedding models...\n");
 
-  const models = [
-    "text-embedding-3-small",
-    "text-embedding-3-large",
-    "text-embedding-ada-002",
-  ];
+  const models = ["text-embedding-3-small", "text-embedding-ada-002"];
 
   for (const model of models) {
     try {

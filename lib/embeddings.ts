@@ -1,3 +1,8 @@
+import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: ".env.local" });
+
 import OpenAI from "openai";
 
 const openai = new OpenAI({

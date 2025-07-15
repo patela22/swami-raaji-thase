@@ -1,4 +1,11 @@
-import { supabase } from "../lib/supabase";
+import { Pinecone } from "@pinecone-database/pinecone";
+
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
+});
+const pineconeIndex = pinecone.Index(
+  process.env.PINECONE_INDEX! || "baps-embeddings"
+);
 
 // Map old scripture names to new ones (same as in ingest.ts)
 function getScriptureName(fileName: string): string {
@@ -77,72 +84,77 @@ function getScriptureName(fileName: string): string {
 }
 
 async function updateScriptureNames() {
-  console.log("🔄 Updating scripture names in database...\n");
+  console.log("🔄 Updating scripture names in Pinecone index...\n");
 
   try {
-    // Get all unique scripture names from database
-    const { data: scriptures, error } = await supabase
-      .from("embeddings")
-      .select("scripture")
-      .limit(1000);
+    // Get index statistics
+    const indexStats = await pineconeIndex.describeIndexStats();
+    const totalVectors = indexStats.totalRecordCount || 0;
 
-    if (error) {
-      console.error("❌ Error fetching scriptures:", error);
+    if (totalVectors === 0) {
+      console.log("❌ No vectors found in the index");
       return;
     }
 
-    if (!scriptures || scriptures.length === 0) {
-      console.log("❌ No scriptures found in database");
-      return;
-    }
+    console.log(`📚 Found ${totalVectors} vectors in the index`);
 
-    // Get unique scripture names
-    const uniqueScriptures = Array.from(
-      new Set(scriptures.map((s) => s.scripture))
-    );
+    // Note: Pinecone doesn't support bulk metadata updates like Supabase
+    // This script will show what changes would be needed but can't perform them
+    console.log("⚠️  Note: Pinecone doesn't support bulk metadata updates");
+    console.log("   To update scripture names, you would need to:");
     console.log(
-      `📚 Found ${uniqueScriptures.length} unique scriptures in database`
+      "   1. Re-run the ingest script with updated scripture names, or"
     );
+    console.log("   2. Delete and recreate the index, or");
+    console.log("   3. Use a paid Pinecone plan with more advanced features");
 
-    let updatedCount = 0;
-    let skippedCount = 0;
+    // Show what scripture names are currently in the index
+    console.log("\n📖 Current scripture names in index:");
+    const scriptures = new Set<string>();
 
-    // Update each scripture name
-    for (const oldName of uniqueScriptures) {
-      const newName = getScriptureName(oldName);
+    // Query multiple times to get a sample of scripture names
+    for (let i = 0; i < Math.min(10, Math.ceil(totalVectors / 100)); i++) {
+      const queryResponse = await pineconeIndex.query({
+        vector: Array.from({ length: 1536 }, () => Math.random() - 0.5),
+        topK: 100,
+        includeMetadata: true,
+        includeValues: false,
+      });
 
-      if (newName !== oldName) {
-        console.log(`🔄 Updating: "${oldName}" → "${newName}"`);
-
-        const { error: updateError } = await supabase
-          .from("embeddings")
-          .update({ scripture: newName })
-          .eq("scripture", oldName);
-
-        if (updateError) {
-          console.error(`❌ Error updating "${oldName}":`, updateError);
-        } else {
-          updatedCount++;
+      queryResponse.matches?.forEach((match) => {
+        const metadata = match.metadata as any;
+        if (metadata?.scripture) {
+          scriptures.add(metadata.scripture);
         }
-      } else {
-        console.log(`⏭️  Skipping: "${oldName}" (no change needed)`);
-        skippedCount++;
-      }
+      });
     }
 
-    console.log(`\n✅ Update complete!`);
-    console.log(`   - Updated: ${updatedCount} scriptures`);
-    console.log(`   - Skipped: ${skippedCount} scriptures`);
-    console.log(`   - Total: ${uniqueScriptures.length} scriptures`);
+    console.log(`Found ${scriptures.size} unique scripture names:`);
+    Array.from(scriptures)
+      .sort()
+      .forEach((scripture) => {
+        const newName = getScriptureName(scripture);
+        if (newName !== scripture) {
+          console.log(`   "${scripture}" → "${newName}"`);
+        } else {
+          console.log(`   "${scripture}" (no change needed)`);
+        }
+      });
+
+    console.log(`\n✅ Scripture name analysis complete!`);
+    console.log(`   - Total unique scriptures: ${scriptures.size}`);
+    console.log(
+      `   - Note: Actual updates require re-ingestion or index recreation`
+    );
   } catch (error) {
-    console.error("❌ Error during update:", error);
+    console.error("❌ Error during analysis:", error);
   }
 }
 
 // Run the update
 updateScriptureNames()
   .then(() => {
-    console.log("\n🎉 Scripture name update completed!");
+    console.log("\n🎉 Scripture name analysis completed!");
     process.exit(0);
   })
   .catch((error) => {

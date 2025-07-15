@@ -12,6 +12,7 @@
     "test": "tsx scripts/test-setup.ts"
   },
   "dependencies": {
+    "@pinecone-database/pinecone": "^6.1.1",
     "@supabase/supabase-js": "^2.38.0",
     "autoprefixer": "^10.4.16",
     "dotenv": "^17.2.0",
