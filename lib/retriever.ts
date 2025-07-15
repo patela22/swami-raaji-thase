@@ -52,7 +52,7 @@ export async function queryVectorDB(
   } = options;
 
   // Check if Pinecone is configured
-  if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+  if (!process.env.PINECONE_API_KEY) {
     console.warn("Pinecone not configured - returning mock data");
     return getMockResults(query, topK);
   }
@@ -417,7 +417,7 @@ export async function insertEmbeddings(
     embedding: number[];
   }>
 ): Promise<void> {
-  if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+  if (!process.env.PINECONE_API_KEY) {
     console.warn("Pinecone not configured - skipping embedding insertion");
     return;
   }

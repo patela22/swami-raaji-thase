@@ -34,7 +34,6 @@
    ```
    OPENAI_API_KEY=your_openai_api_key
    PINECONE_API_KEY=your_pinecone_api_key
-   PINECONE_ENVIRONMENT=your_pinecone_environment
    PINECONE_INDEX=your_pinecone_index_name
    ```
 7. **Click "Deploy"**
@@ -78,7 +77,6 @@ If you want to use real data instead of mock data, add these to your deployment 
 ```env
 OPENAI_API_KEY=your_openai_api_key
 PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=your_pinecone_environment
 PINECONE_INDEX=your_pinecone_index_name
 ```
 

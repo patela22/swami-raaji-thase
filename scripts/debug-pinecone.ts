@@ -32,7 +32,7 @@ async function debugPinecone() {
   try {
     console.log("1. Creating Pinecone client...");
     const pinecone = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY,
+      apiKey: process.env.PINECONE_API_KEY!,
     });
     console.log("✅ Pinecone client created");
 

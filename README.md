@@ -51,7 +51,6 @@ This AI assistant provides accurate, well-cited answers about BAPS (Bochasanwasi
    ```env
    # Pinecone Configuration (Optional)
    PINECONE_API_KEY=your_pinecone_api_key_here
-   PINECONE_ENVIRONMENT=your_pinecone_environment_here
    PINECONE_INDEX=your_pinecone_index_name_here
 
    # OpenAI Configuration (Optional)
@@ -117,7 +116,6 @@ If you want to use real data instead of mock data, add these to your deployment 
 ```env
 OPENAI_API_KEY=your_openai_api_key
 PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=your_pinecone_environment
 PINECONE_INDEX=your_pinecone_index_name
 ```
 
